@@ -5,7 +5,7 @@ TRAIN:
   EVAL_PERIOD: 10
   CHECKPOINT_PERIOD: 1
   AUTO_RESUME: True
-  CHECKPOINT_FILE_PATH: "./SLOWFAST_8x8_R50.pkl" # path to pretrain model to run demo
+  CHECKPOINT_FILE_PATH: ./demo/Kinetics/SLOWFAST_8x8_R50.pkl # path to pretrain model to run demo
   CHECKPOINT_TYPE: caffe2
 DATA:
   NUM_FRAMES: 32
@@ -42,7 +42,7 @@ SOLVER:
   MAX_EPOCH: 196
   MOMENTUM: 0.9
   WEIGHT_DECAY: 1e-4
-  WARMUP_EPOCHS: 34
+  WARMUP_EPOCHS: 34.0
   WARMUP_START_LR: 0.01
   OPTIMIZING_METHOD: sgd
 MODEL:
@@ -54,13 +54,18 @@ TEST:
   ENABLE: False
   DATASET: kinetics
   BATCH_SIZE: 64
+  CHECKPOINT_FILE_PATH: ./demo/Kinetics/SLOWFAST_8x8_R50.pkl # path to pretrain model to run demo
+  CHECKPOINT_TYPE: caffe2
 DATA_LOADER:
   NUM_WORKERS: 8
   PIN_MEMORY: True
 DEMO:
   ENABLE: True
-  LABEL_FILE_PATH:  # Add local label file path here.
-  WEBCAM: 0
+  OUTPUT_FILE: ./demo/KidsCycling_Kinetic_out.mp4
+  LABEL_FILE_PATH:  ./demo/Kinetics/label.json
+  INPUT_VIDEO: ./demo/KidsCycling.mp4  # Path to a video file or image folder
+  GT_BOXES: ./demo/Kinetics/train.csv # Path to ground-truth boxes and labels in AVA format (optional).
+
 NUM_GPUS: 1
 NUM_SHARDS: 1
 RNG_SEED: 0

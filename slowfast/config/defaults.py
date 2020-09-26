@@ -109,7 +109,7 @@ _C.RESNET = CfgNode()
 _C.RESNET.TRANS_FUNC = "bottleneck_transform"
 
 # Number of groups. 1 for ResNet, and larger than 1 for ResNeXt).
-_C.RESNET.NUM_GROUPS = 1
+_C.RESNET.NUM_GROUPS = 0
 
 # Width of each group (64 -> ResNet; 4 -> ResNeXt).
 _C.RESNET.WIDTH_PER_GROUP = 64
@@ -340,7 +340,7 @@ _C.SOLVER.OPTIMIZING_METHOD = "sgd"
 # ---------------------------------------------------------------------------- #
 
 # Number of GPUs to use (applies to both training and testing).
-_C.NUM_GPUS = 1
+#_C.NUM_GPUS = 0
 
 # Number of machine to use for the job.
 _C.NUM_SHARDS = 1
@@ -729,17 +729,17 @@ def _assert_and_infer_cfg(cfg):
         assert cfg.BN.NUM_BATCHES_PRECISE >= 0
     # TRAIN assertions.
     assert cfg.TRAIN.CHECKPOINT_TYPE in ["pytorch", "caffe2"]
-    assert cfg.TRAIN.BATCH_SIZE % cfg.NUM_GPUS == 0
+    #assert cfg.TRAIN.BATCH_SIZE % cfg.NUM_GPUS == 0
 
     # TEST assertions.
     assert cfg.TEST.CHECKPOINT_TYPE in ["pytorch", "caffe2"]
-    assert cfg.TEST.BATCH_SIZE % cfg.NUM_GPUS == 0
+    #assert cfg.TEST.BATCH_SIZE % cfg.NUM_GPUS == 0
     assert cfg.TEST.NUM_SPATIAL_CROPS == 3
 
     # RESNET assertions.
-    assert cfg.RESNET.NUM_GROUPS > 0
-    assert cfg.RESNET.WIDTH_PER_GROUP > 0
-    assert cfg.RESNET.WIDTH_PER_GROUP % cfg.RESNET.NUM_GROUPS == 0
+    #assert cfg.RESNET.NUM_GROUPS > 0
+    #assert cfg.RESNET.WIDTH_PER_GROUP > 0
+    #assert cfg.RESNET.WIDTH_PER_GROUP % cfg.RESNET.NUM_GROUPS == 0
 
     # General assertions.
     assert cfg.SHARD_ID < cfg.NUM_SHARDS

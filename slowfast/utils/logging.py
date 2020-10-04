@@ -50,7 +50,7 @@ def setup_logging(output_dir=None):
     logger.setLevel(logging.DEBUG)
     logger.propagate = False
     plain_formatter = logging.Formatter(
-        "[%(asctime)s][%(levelname)s] %(filename)s: %(lineno)3d: %(message)s",
+        "[%(asctime)s][%(levelname)s] %(filename)s: %(funcName)s() %(lineno)3d: %(message)s",
         datefmt="%m/%d %H:%M:%S",
     )
 

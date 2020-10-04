@@ -158,6 +158,7 @@ class SlowFast(nn.Module):
             cfg (CfgNode): model building configs, details are in the
                 comments of the config file.
         """
+        print("@MODEL_REGISTRY.register()  SlowFast")
         super(SlowFast, self).__init__()
         self.norm_module = get_norm(cfg)
         self.enable_detection = cfg.DETECTION.ENABLE

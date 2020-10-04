@@ -34,8 +34,9 @@ def build_model(cfg, gpu_id=None):
 
     # Construct the model
     name = cfg.MODEL.MODEL_NAME
+    print("Model name",name)
     model = MODEL_REGISTRY.get(name)(cfg)
-
+    print("Model",model)
     if cfg.NUM_GPUS:
         if gpu_id is None:
             # Determine the GPU used by the current process

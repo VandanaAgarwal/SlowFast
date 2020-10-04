@@ -359,6 +359,7 @@ class TaskInfo:
             idx (int): the current index of the clip.
             frames (list[ndarray]): list of images in "BGR" format.
         """
+        logger.info("TaskInfo"+str(idx))
         self.frames = frames
         self.id = idx
 

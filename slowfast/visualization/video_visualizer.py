@@ -381,7 +381,6 @@ class VideoVisualizer:
         assert mode in ["top-k", "thres"], "Mode {} is not supported.".format(
             mode
         )
-        logger.info(str(num_classes), class_names_path,str(top_k),colormap ,str(thres) ,str(lower_thres) ,str(common_class_names), mode)
         self.mode = mode
         self.num_classes = num_classes
         self.class_names, _, _ = get_class_names(class_names_path, None, None)
@@ -430,8 +429,6 @@ class VideoVisualizer:
                 text_alpha (Optional[float]): transparency level of the box wrapped around text labels.
                 ground_truth (bool): whether the prodived bounding boxes are ground-truth.
         """
-        logger.info(" ")
-        #logger.info("draw_one_frame",frame, preds, bboxes, alpha ,text_alpha,ground_truth  )
         if isinstance(preds, torch.Tensor):
             if preds.ndim == 1:
                 preds = preds.unsqueeze(0)
@@ -541,8 +538,6 @@ class VideoVisualizer:
                     If None, draw on the entire clip.
                 repeat_frame (int): repeat each frame in draw_range for `repeat_frame` time for slow-motion effect.
         """
-        logger.info("")
-        #logger.info("draw_clip_range",frames, preds, bboxes ,text_alpha,ground_truth ,keyframe_idx ,draw_range ,repeat_frame )
         if draw_range is None:
             draw_range = [0, len(frames) - 1]
         if draw_range is not None:

@@ -20,7 +20,6 @@ class VideoManager:
     """
 
     def __init__(self, cfg):
-        logger.info("VideoManager init")
         """
         Args:
             cfg (CfgNode): configs. Details can be found in
@@ -75,7 +74,6 @@ class VideoManager:
             was_read (bool): False if not enough frames to return.
             task (TaskInfo object): object contains metadata for the current clips.
         """
-        logger.info("VideoManager __next__")
         self.id += 1
         task = TaskInfo()
 

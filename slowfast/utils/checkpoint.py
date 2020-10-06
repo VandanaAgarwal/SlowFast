@@ -184,6 +184,7 @@ def load_checkpoint(
     convert_from_caffe2=False,
     epoch_reset=False,
     clear_name_pattern=(),
+    lblToIgnore=[]
 ):
     """
     Load the checkpoint from the given file. If inflation is True, inflate the
@@ -331,6 +332,11 @@ def load_checkpoint(
                 for k in not_load_layers:
                     logger.info("Network weights {} not loaded.".format(k))
             # Load pre-trained weights.
+            if lblToIgnore :
+                for lbl_index_row in lblToIgnore : 
+                    pre_train_dict_match["head.projection.weight"][lbl_index_row,:]=0
+                logger.info("Model Modified to close FC layer connection")
+                logger.info(pre_train_dict_match["head.projection.weight"])
             ms.load_state_dict(pre_train_dict_match, strict=False)
             epoch = -1
 
@@ -462,6 +468,7 @@ def load_test_checkpoint(cfg, model):
             None,
             inflation=False,
             convert_from_caffe2=cfg.TEST.CHECKPOINT_TYPE == "caffe2",
+            lblToIgnore=cfg.DEMO.IGNORE_LBL
         )
     elif has_checkpoint(cfg.OUTPUT_DIR):
         last_checkpoint = get_last_checkpoint(cfg.OUTPUT_DIR)

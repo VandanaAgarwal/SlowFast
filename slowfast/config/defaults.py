@@ -758,6 +758,9 @@ _C.DEMO.COMMON_CLASS_NAMES = [
 # video will be played `_C.DEMO.SLOWMO` times slower than usual speed.
 _C.DEMO.SLOWMO = 1
 
+# Label which should not be displayed in final display
+_C.DEMO.IGNORE_LBL=[]
+
 # Add custom config with default values.
 custom_config.add_custom_config(_C)
 

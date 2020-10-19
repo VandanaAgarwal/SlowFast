@@ -13,7 +13,7 @@ from slowfast.utils.misc import get_class_names
 
 logger = logging.get_logger(__name__)
 log.getLogger("matplotlib").setLevel(log.ERROR)
-
+#VA
 
 def _create_text_labels(classes, scores, class_names, ground_truth=False):
     """

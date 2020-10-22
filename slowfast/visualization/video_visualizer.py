@@ -11,6 +11,46 @@ from detectron2.utils.visualizer import Visualizer
 import slowfast.utils.logging as logging
 from slowfast.utils.misc import get_class_names
 
+# VA edits begin
+import face_recognition
+import cv2 
+import os
+from google.colab.patches import cv2_imshow
+from PIL import Image
+
+train_folder = '/content/SlowFastData/demo/AVA/face_recog'
+count = 1 
+
+images = []
+names = []
+for person in os.listdir(train_folder) :
+    person_path = os.path.join(train_folder,person)
+
+    for filename in os.listdir(person_path) :
+        image_path = os.path.join(person_path, filename)
+        curr = cv2.imread(image_path)
+        images.append(curr)
+        names.append(person) # + '_' + filename)
+print(names)
+
+def find_encodings(images) :
+    encoded_list = []
+    count = 1 
+    for img, nm in zip(images, names) :
+        print(nm)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        encodings = face_recognition.face_encodings(img)
+        if encodings :
+            encode = face_recognition.face_encodings(img)[0]
+        else : continue
+        encoded_list.append(encode)
+        count += 1
+    print('***************', len(encoded_list))
+    return encoded_list
+
+encoding_known = find_encodings(images)
+# VA edits end
+
 logger = logging.get_logger(__name__)
 log.getLogger("matplotlib").setLevel(log.ERROR)
 
@@ -469,14 +509,97 @@ class VideoVisualizer:
             max(np.sqrt(frame.shape[0] * frame.shape[1]) // 35, 5), 9
         )
         top_corner = not ground_truth
+
+        # VA edits begin
+        ftemp = open('/content/SlowFast/slowfast/visualization/labels.txt', 'a')
+        # VA edits end
+
         if bboxes is not None:
             assert len(preds) == len(
                 bboxes
             ), "Encounter {} predictions and {} bounding boxes".format(
                 len(preds), len(bboxes)
             )
+            # VA edits begin
+            global count
+            # VA edits end
             for i, box in enumerate(bboxes):
                 text = text_labels[i]
+
+                # VA edits begin
+                print('@@@@@@@@@', file=ftemp) ;print('@@@@@@@@@')
+                print(text, box, file=ftemp) ;print(text, box)
+                '''
+                box_coord (tuple): a tuple containing x0, y0, x1, y1 coordinates, where x0 and y0
+                are the coordinates of the image's top left corner. x1 and y1 are the
+                coordinates of the image's bottom right corner.
+
+                box --> x0, y0, x1, y1 = box_coord
+                width = x1 - x0
+                height = y1 - y0
+                '''
+
+                x0, y0, x1, y1 = box
+                x0 = int(x0.item())
+                x1 = int(x1.item())
+                y0 = int(y0.item())
+                y1 = int(y1.item())
+                print('\n\nFrame no ---> {0}'.format(count))
+                print('!!!!!!!!!!!!---', x0, x1, y0, y1, 'frame sh--->', frame.shape, file=ftemp)
+                print('!!!!!!!!!!!!---', x0, x1, y0, y1, 'frame sh--->', frame.shape)
+                body = frame[y0:y1, x0:x1]
+
+                body_file = "/content/SlowFast/slowfast/visualization/body" + str(count) + '.jpg'
+                im = Image.fromarray(body)
+                im.save(body_file)
+                print('\n\nSAVING IMAGE to ---> {0}\n\ns'.format(body_file))
+                count += 1
+                #cv2_imshow(body)
+
+                img = cv2.resize(body, (0,0), None, 0.5, 0.5)
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                faces_current = face_recognition.face_locations(img)
+                print('no of faces---', len(faces_current), file=ftemp)
+                print('no of faces---', len(faces_current))
+                encode_current = face_recognition.face_encodings(img, faces_current)
+                print('created encoding')
+
+                if len(faces_current) == 1 : input('FOUND FACE...')
+                boundaries = []
+                person_names = []
+                for encodeF, faceLoc in zip(encode_current, faces_current):
+                    print('---------------------------------', file=ftemp)
+                    print('---------------------------------')
+                    matches = face_recognition.compare_faces(encoding_known, encodeF, tolerance=0.5)
+                    #print(matches)
+                    #input()
+                    face_dis = face_recognition.face_distance(encoding_known, encodeF)
+                    #print(face_dis)
+                    #input()
+                    matched_index = np.argmin(face_dis)
+                    print(matched_index, file=ftemp)
+                    print(matches[matched_index], file=ftemp)
+
+                    if matches[matched_index]:
+                            name = names[matched_index].upper()
+                    else :
+                        name = 'unknown'
+
+                    print(name, file=ftemp) ; print(name)
+                    top, right, bottom, left = faceLoc
+                    bndry = left, top, right, bottom
+                    boundaries.append(bndry)
+                    person_names.append(name)
+
+                for bndry, person in zip(boundaries, person_names) :
+                    cv2.rectangle(img, (bndry[0], bndry[1]), (bndry[2], bndry[3]), (0, 255, 0), 5)
+                    cv2.putText(img, person, (bndry[0], bndry[1] - 20), cv2.FONT_HERSHEY_DUPLEX, 1.0, (0, 255, 0), 2)
+
+                plt.imshow(img)
+                plt.show()
+                print('@@@@@@@@@', file=ftemp) ;print('@@@@@@@@@')
+                # VA edits end
+
                 pred_class = top_classes[i]
                 colors = [self._get_color(pred) for pred in pred_class]
 

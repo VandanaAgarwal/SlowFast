@@ -13,12 +13,13 @@ from slowfast.utils.misc import get_class_names
 
 # VA edits begin
 import face_recognition
-import cv2
+import cv2 
 import os
 from google.colab.patches import cv2_imshow
+from PIL import Image
 
 train_folder = '/content/SlowFastData/demo/AVA/face_recog'
-count = 1
+count = 1 
 
 images = []
 names = []
@@ -34,7 +35,7 @@ print(names)
 
 def find_encodings(images) :
     encoded_list = []
-    count = 1
+    count = 1 
     for img, nm in zip(images, names) :
         print(nm)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -508,9 +509,11 @@ class VideoVisualizer:
             max(np.sqrt(frame.shape[0] * frame.shape[1]) // 35, 5), 9
         )
         top_corner = not ground_truth
+
         # VA edits begin
         ftemp = open('/content/SlowFast/slowfast/visualization/labels.txt', 'a')
         # VA edits end
+
         if bboxes is not None:
             assert len(preds) == len(
                 bboxes
@@ -545,25 +548,22 @@ class VideoVisualizer:
                 print('!!!!!!!!!!!!---', x0, x1, y0, y1, 'frame sh--->', frame.shape, file=ftemp)
                 print('!!!!!!!!!!!!---', x0, x1, y0, y1, 'frame sh--->', frame.shape)
                 body = frame[y0:y1, x0:x1]
-                
-                #from PIL import Image
-                #im = Image.fromarray(frame)
-                
-                #body_file = "/content/SlowFast/slowfast/visualization/body" + str(count) + '.jpg'
-                #im.save("/content/SlowFast/slowfast/visualization/frame1.jpg")
-                #im = Image.fromarray(body)
-                #im.save(body_file)
-                #print('\n\nSAVING IMAGE to ---> {0}\n\ns'.format(body_file))
+
+                body_file = "/content/SlowFast/slowfast/visualization/body" + str(count) + '.jpg'
+                im = Image.fromarray(body)
+                im.save(body_file)
+                print('\n\nSAVING IMAGE to ---> {0}\n\ns'.format(body_file))
                 count += 1
                 #cv2_imshow(body)
 
                 img = cv2.resize(body, (0,0), None, 0.5, 0.5)
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                 faces_current = face_recognition.face_locations(img)
-                encode_current = face_recognition.face_encodings(img, faces_current)
-
                 print('no of faces---', len(faces_current), file=ftemp)
                 print('no of faces---', len(faces_current))
+                encode_current = face_recognition.face_encodings(img, faces_current)
+                print('created encoding')
+
                 if len(faces_current) == 1 : input('FOUND FACE...')
                 boundaries = []
                 person_names = []
@@ -579,9 +579,9 @@ class VideoVisualizer:
                     matched_index = np.argmin(face_dis)
                     print(matched_index, file=ftemp)
                     print(matches[matched_index], file=ftemp)
-            
+
                     if matches[matched_index]:
-        	            name = names[matched_index].upper()
+                            name = names[matched_index].upper()
                     else :
                         name = 'unknown'
 
@@ -595,8 +595,8 @@ class VideoVisualizer:
                     cv2.rectangle(img, (bndry[0], bndry[1]), (bndry[2], bndry[3]), (0, 255, 0), 5)
                     cv2.putText(img, person, (bndry[0], bndry[1] - 20), cv2.FONT_HERSHEY_DUPLEX, 1.0, (0, 255, 0), 2)
 
-                plt.imshow(img)
-                plt.show()
+                #plt.imshow(img)
+                #plt.show()
                 print('@@@@@@@@@', file=ftemp) ;print('@@@@@@@@@')
                 # VA edits end
 
@@ -632,9 +632,6 @@ class VideoVisualizer:
                 alpha=text_alpha,
             )
 
-        # VA edits begin
-        ftemp.close()
-        # VA edits end
         return frame_visualizer.output.get_image()
 
     def draw_clip_range(
@@ -756,9 +753,6 @@ class VideoVisualizer:
 
             img_ls.append(draw_img)
 
-        # VA edits begin
-        print('FINISHED DRAWING FRAMES....')
-        # VA edits end
         return img_ls
 
     def _adjust_frames_type(self, frames):

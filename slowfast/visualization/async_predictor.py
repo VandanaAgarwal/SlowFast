@@ -303,6 +303,9 @@ def draw_predictions(task, video_vis):
     frames = frames[task.num_buffer_frames :]
     if boxes is not None:
         if len(boxes) != 0:
+            # VA edits begin
+            print('\n\nTASK ID in async predictor--->', task.id)
+            # VA edits end
             frames = video_vis.draw_clip_range(
                 frames,
                 preds,

@@ -492,9 +492,22 @@ class VideoVisualizer:
             )
             # VA edits begin
             #global count
+            print('@@@@@@@@@')
             # VA edits end
             for i, box in enumerate(bboxes):
                 text = text_labels[i]
+                # VA edits begin
+                print(text)
+                print(box)
+                
+                x0, y0, x1, y1 = box
+                x0 = int(x0.item())
+                x1 = int(x1.item())
+                y0 = int(y0.item())
+                y1 = int(y1.item())
+                print('!!!!!!!!!!!!---', x0, x1, y0, y1, 'frame sh--->', frame.shape)
+                # VA edits end
+                
                 pred_class = top_classes[i]
                 colors = [self._get_color(pred) for pred in pred_class]
 
@@ -514,6 +527,7 @@ class VideoVisualizer:
                     box_facecolors=colors,
                     alpha=text_alpha,
                 )
+            print('-----------------')
         else:
             text = text_labels[0]
             pred_class = top_classes[0]
@@ -556,8 +570,11 @@ class VideoVisualizer:
                     If None, draw on the entire clip.
                 repeat_frame (int): repeat each frame in draw_range for `repeat_frame` time for slow-motion effect.
         """
+        # VA edits begin
+        print('\n\nDRAW RANGE-->', draw_range)
+        # VA edits end
         if draw_range is None:
-            draw_range = [0, len(frames) - 1]
+            draw_range = [0, len(fConnectingrames) - 1]
         if draw_range is not None:
             draw_range[0] = max(0, draw_range[0])
             left_frames = frames[: draw_range[0]]

@@ -11,6 +11,13 @@ import slowfast.utils.logging as logging
 from slowfast.datasets import cv2_transform
 from slowfast.visualization.predictor import Predictor
 
+# VA edits begin
+from slowfast.utils.misc import get_class_names
+import pandas as pd
+from PIL import Image
+df_frames = pd.DataFrame(columns=['Task_id', 'Frame_file', 'Bbox_x0', 'Bbox_x1', 'Bbox_y0', 'Bbox_y1', 'Action', 'Scores'])
+# VA edits end
+
 logger = logging.get_logger(__name__)
 
 
@@ -125,7 +132,10 @@ class AsycnActionPredictor:
 
 class AsyncVis:
     class _VisWorker(mp.Process):
-        def __init__(self, video_vis, task_queue, result_queue):
+        # VA edits begin
+        #def __init__(self, video_vis, task_queue, result_queue):
+        def __init__(self, video_vis, task_queue, result_queue, label_filepath=None):
+        # VA edits end
             """
             Visualization Worker for AsyncVis.
             Args:
@@ -136,6 +146,9 @@ class AsyncVis:
             self.video_vis = video_vis
             self.task_queue = task_queue
             self.result_queue = result_queue
+            # VA edits begin
+            self.label_filepath = label_filepath
+            # VA edits end
             super().__init__()
 
         def run(self):
@@ -147,11 +160,21 @@ class AsyncVis:
                 if isinstance(task, _StopToken):
                     break
 
-                frames = draw_predictions(task, self.video_vis)
+                # VA edits begin
+                #frames = draw_predictions(task, self.video_vis)
+                frames = draw_predictions(task, self.video_vis, self.label_filepath)
+                # VA edits end
                 task.frames = np.array(frames)
                 self.result_queue.put(task)
 
-    def __init__(self, video_vis, n_workers=None):
+            print(df_frames)
+            frame_csv = '/content/SlowFast/slowfast/visualization/frames.csv'
+            df_frames.to_csv(frame_csv)
+
+    # VA edits begin
+    #def __init__(self, video_vis, n_workers=None):
+    def __init__(self, video_vis, n_workers=None, label_filepath=None):
+    # VA edits end
         """
         Args:
             cfg (CfgNode): configs. Details can be found in
@@ -171,7 +194,10 @@ class AsyncVis:
         for _ in range(max(num_workers, 1)):
             self.procs.append(
                 AsyncVis._VisWorker(
-                    video_vis, self.task_queue, self.result_queue
+                    # VA edits begin
+                    #video_vis, self.task_queue, self.result_queue
+                    video_vis, self.task_queue, self.result_queue, label_filepath
+                    # VA edits end
                 )
             )
 
@@ -272,8 +298,10 @@ class AsyncDemo:
 
         return task
 
-
-def draw_predictions(task, video_vis):
+# VA edits begin
+#def draw_predictions(task, video_vis):
+def draw_predictions(task, video_vis, label_filepath=None):
+# VA edits end
     """
     Draw prediction for the given task.
     Args:
@@ -296,14 +324,15 @@ def draw_predictions(task, video_vis):
         # VA edits begin
         print('************************')
         print('************************')
-        for b in boxes :
-              x0, y0, x1, y1 = b
-              x0 = int(x0.item())
-              x1 = int(x1.item())
-              y0 = int(y0.item())
-              y1 = int(y1.item())
-              print('\t', x0, x1, y0, y1,)
-        print('_________________________')
+        #print('CROP_SIZE::{0}, IMG_HT::{1}, IMG_WDTH::{2}'.format(task.crop_size, img_height, img_width))
+        #for b in boxes :
+              #x0, y0, x1, y1 = b
+              #x0 = int(x0.item())
+              #x1 = int(x1.item())
+              #y0 = int(y0.item())
+              #y1 = int(y1.item())
+              #print('\t', x0, x1, y0, y1,)
+        #print('_________________________')
         # VA edits end
         boxes = cv2_transform.revert_scaled_boxes(
             task.crop_size, boxes, img_height, img_width
@@ -326,12 +355,48 @@ def draw_predictions(task, video_vis):
         keyframe_idx - task.clip_vis_size,
         keyframe_idx + task.clip_vis_size,
     ]
+    
     buffer = frames[: task.num_buffer_frames]
     frames = frames[task.num_buffer_frames :]
+    
+    # VA edits begin
+    fr_of_interest_idx = keyframe_idx #len(frames) // 2
+    fr_of_interest = frames[fr_of_interest_idx]
+    # CREATE CSV HERE
+    # WHICH FR TO BE TAKEN ??? -> to save as fr#task_id.jpg
+    # All frs seem to be same
+    # action ---> task.action_preds --> array of arr
+    
+    frame_file = "/content/SlowFast/slowfast/visualization/frame_" + str(task.id) + '.jpg'
+    im = Image.fromarray(fr_of_interest)
+    im.save(frame_file)
+    print('\n\nSAVING IMAGE to ---> {0}\n\n'.format(frame_file))
+    # VA edits end
     if boxes is not None:
         if len(boxes) != 0:
             # VA edits begin
             print('TASK ID in async predictor--->', task.id)
+
+            preds =task.action_preds
+            class_names, _, _ = get_class_names(label_filepath, None, None)
+
+            top_scores, top_classes, labels = [], [],[]
+            for pred in preds :
+                mask = pred >= 0.7
+                top_scores.append(pred[mask].tolist())
+                top_class = torch.squeeze(torch.nonzero(mask), dim=-1).tolist()
+                top_classes.append(top_class)
+                lbls= [class_names[i] for i in top_class]
+                labels.append(lbls)
+
+            for idx, box in enumerate(boxes) :
+              x0, y0, x1, y1 = box
+              x0 = int(x0.item())
+              x1 = int(x1.item())
+              y0 = int(y0.item())
+              y1 = int(y1.item())
+              print('No of rows={0}, INSERTING NEW ROW...'.format(df_frames.index))
+              df_frames.loc[len(df_frames.index)] = [task.id, frame_file, x0, x1, y0, y1, labels[idx], top_scores[idx]]
             # VA edits end
             frames = video_vis.draw_clip_range(
                 frames,

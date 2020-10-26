@@ -53,7 +53,10 @@ def run_demo(cfg, frame_provider):
         mode=cfg.DEMO.VIS_MODE,
     )
 
-    async_vis = AsyncVis(video_vis, n_workers=cfg.DEMO.NUM_VIS_INSTANCES)
+    # VA edits begin
+    #async_vis = AsyncVis(video_vis, n_workers=cfg.DEMO.NUM_VIS_INSTANCES)
+    async_vis = AsyncVis(video_vis, n_workers=cfg.DEMO.NUM_VIS_INSTANCES, label_filepath=cfg.DEMO.LABEL_FILE_PATH)
+    # VA edits end
 
     if cfg.NUM_GPUS <= 1:
         model = ActionPredictor(cfg=cfg, async_vis=async_vis)

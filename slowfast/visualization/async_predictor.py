@@ -282,6 +282,9 @@ def draw_predictions(task, video_vis):
             All attributes must lie on CPU devices.
         video_vis (VideoVisualizer object): the video visualizer object.
     """
+    # VA edits begin
+    print('\n\n****DRAW PREDICTIONS****')
+    # VA edits end
     boxes = task.bboxes
     frames = task.frames
     preds = task.action_preds
@@ -290,9 +293,33 @@ def draw_predictions(task, video_vis):
         img_height = task.img_height
         if boxes.device != torch.device("cpu"):
             boxes = boxes.cpu()
+        # VA edits begin
+        print('************************')
+        print('************************')
+        for b in boxes :
+              x0, y0, x1, y1 = b
+              x0 = int(x0.item())
+              x1 = int(x1.item())
+              y0 = int(y0.item())
+              y1 = int(y1.item())
+              print('\t', x0, x1, y0, y1,)
+        print('_________________________')
+        # VA edits end
         boxes = cv2_transform.revert_scaled_boxes(
             task.crop_size, boxes, img_height, img_width
         )
+        # VA edits begin
+        print('_________________________')
+        for b in boxes :
+              x0, y0, x1, y1 = b
+              x0 = int(x0.item())
+              x1 = int(x1.item())
+              y0 = int(y0.item())
+              y1 = int(y1.item())
+              print('\t', x0, x1, y0, y1,)
+        print('************************')
+        print('************************')
+        # VA edits end
 
     keyframe_idx = len(frames) // 2 - task.num_buffer_frames
     draw_range = [
@@ -304,7 +331,7 @@ def draw_predictions(task, video_vis):
     if boxes is not None:
         if len(boxes) != 0:
             # VA edits begin
-            print('\n\nTASK ID in async predictor--->', task.id)
+            print('TASK ID in async predictor--->', task.id)
             # VA edits end
             frames = video_vis.draw_clip_range(
                 frames,

@@ -167,9 +167,11 @@ class AsyncVis:
                 task.frames = np.array(frames)
                 self.result_queue.put(task)
 
+            # VA edits begin
             print(df_frames)
             frame_csv = '/content/SlowFast/slowfast/visualization/frames.csv'
             df_frames.to_csv(frame_csv)
+            # VA edits end
 
     # VA edits begin
     #def __init__(self, video_vis, n_workers=None):

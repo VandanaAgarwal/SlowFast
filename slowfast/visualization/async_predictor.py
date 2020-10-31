@@ -134,7 +134,7 @@ class AsyncVis:
     class _VisWorker(mp.Process):
         # VA edits begin
         #def __init__(self, video_vis, task_queue, result_queue):
-        def __init__(self, video_vis, task_queue, result_queue, label_filepath=None):
+        def __init__(self, video_vis, task_queue, result_queue, label_filepath=None, worker_no=None):
         # VA edits end
             """
             Visualization Worker for AsyncVis.
@@ -148,6 +148,7 @@ class AsyncVis:
             self.result_queue = result_queue
             # VA edits begin
             self.label_filepath = label_filepath
+            self.worker_no = worker_no
             # VA edits end
             super().__init__()
 
@@ -169,7 +170,7 @@ class AsyncVis:
 
             # VA edits begin
             print(df_frames)
-            frame_csv = '/content/SlowFast/slowfast/visualization/frames.csv'
+            frame_csv = f'/content/SlowFastData/demo/OUTPUT/frames_w{self.worker_no}.csv'
             df_frames.to_csv(frame_csv)
             # VA edits end
 
@@ -193,12 +194,16 @@ class AsyncVis:
         self.procs = []
         self.result_data = {}
         self.put_id = -1
-        for _ in range(max(num_workers, 1)):
+
+        # VA edits begin
+        for worker_no in range(max(num_workers, 1)):
+        #for _ in range(max(num_workers, 1)):
+        # VA edits end
             self.procs.append(
                 AsyncVis._VisWorker(
                     # VA edits begin
                     #video_vis, self.task_queue, self.result_queue
-                    video_vis, self.task_queue, self.result_queue, label_filepath
+                    video_vis, self.task_queue, self.result_queue, label_filepath, worker_no
                     # VA edits end
                 )
             )
@@ -369,7 +374,7 @@ def draw_predictions(task, video_vis, label_filepath=None):
     # All frs seem to be same
     # action ---> task.action_preds --> array of arr
     
-    frame_file = "/content/SlowFast/slowfast/visualization/frame_" + str(task.id) + '.jpg'
+    frame_file = "/content/SlowFastData/demo/OUTPUT/frame_" + str(task.id) + '.jpg'
     im = Image.fromarray(fr_of_interest)
     im.save(frame_file)
     print('\n\nSAVING IMAGE to ---> {0}\n\n'.format(frame_file))

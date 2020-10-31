@@ -37,9 +37,19 @@ import face_recognition
 #from google.colab.patches import cv2_imshow
 import os
 import cv2
+import glob
 
 train_folder = '/content/SlowFastData/demo/AVA/face_recog'
-test_folder = '/content/SlowFast/slowfast/visualization/'
+test_folder = '/content/SlowFastData/demo/OUTPUT/'
+
+dfs = []
+for f in glob.glob(test_folder + '*.csv') :
+  df = pd.read_csv(f)
+  dfs.append(df)
+
+df_final = pd.concat(dfs, axis=0)
+df_final = df_final.sort_values('Task_id')
+df_final['Child_name'] = ''
 
 images = []
 names = []
@@ -53,8 +63,9 @@ for person in os.listdir(train_folder) :
         names.append(person) # + '_' + filename)
 print(names)
 
-def find_encodings(images) :
+def find_encodings(images, names) :
     encoded_list = []
+    final_names = []
     count = 1
     for img, nm in zip(images, names) :
         print(nm)
@@ -69,17 +80,19 @@ def find_encodings(images) :
             encode = face_recognition.face_encodings(img)[0]
         else : continue
         encoded_list.append(encode)
+        final_names.append(nm)
+        
         count += 1
     print('***************', len(encoded_list))
-    return encoded_list
+    return encoded_list, final_names
 
-encoding_known = find_encodings(images)
+encoding_known, final_names = find_encodings(images, names)
 
 files = [f for f in os.listdir(test_folder) if '.png' in f or '.jpg' in f]
-
 for fname in files :
     print('\n\nfilename--->', fname, '....................')
-    img = cv2.imread(test_folder + fname)
+    fname = test_folder + fname
+    img = cv2.imread(fname)
 
     img = cv2.resize(img, (0,0), None, 0.5, 0.5)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -95,21 +108,18 @@ for fname in files :
     for encodeF, faceLoc in zip(encode_current, faces_current):
         #print('---------------------------------')
         matches = face_recognition.compare_faces(encoding_known, encodeF, tolerance=0.5)
-        #print(matches)
-        #input()
         face_dis = face_recognition.face_distance(encoding_known, encodeF)
-        #print(face_dis)
-        #input()
         matched_index = np.argmin(face_dis)
-        #print(matched_index)
-        #print(matches[matched_index])
-
+        
         if matches[matched_index]:
-        	name = names[matched_index].upper()
+        	name = final_names[matched_index].upper()
         else :
             name = 'unknown'
 
         print('names is --->', name)
+
+        df_final.at[df_final.index[df_final['Frame_file']==fname].tolist()[0], 'Child_name'] = name
+        
         top, right, bottom, left = faceLoc
         bndry = left, top, right, bottom
         boundaries.append(bndry)
@@ -127,3 +137,5 @@ for fname in files :
 
     #plt.imshow(img)
     #plt.show()
+
+df_final.to_csv('/content/SlowFast/slowfast/visualization/frames_final.csv')

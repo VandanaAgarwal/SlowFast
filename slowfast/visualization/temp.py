@@ -138,4 +138,4 @@ for fname in files :
     #plt.imshow(img)
     #plt.show()
 
-df_final.to_csv('/content/SlowFast/slowfast/visualization/frames_final.csv')
+df_final.to_csv(test_folder + 'frames_final.csv')
